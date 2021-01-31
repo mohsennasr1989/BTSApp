@@ -33,9 +33,9 @@ class ProductAdmin(admin.ModelAdmin):
 
 @admin.register(ProductUnit)
 class ProductUnitAdmin(admin.ModelAdmin):
-    list_display = ('id', 'unit', 'package')
-    search_fields = ('id', 'unit', 'package')
-    list_filter = ('id', 'unit', 'package')
+    list_display = ('id', 'name', 'unit', 'package')
+    search_fields = ('id', 'name', 'unit', 'package')
+    list_filter = ('id', 'name', 'unit', 'package')
 
 
 @admin.register(PriceCurrency)

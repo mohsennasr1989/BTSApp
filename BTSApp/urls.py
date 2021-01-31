@@ -21,7 +21,13 @@ from rest_framework import routers
 from product import views as product_view
 
 router = routers.SimpleRouter()
-router.register('products', product_view.AllProductsList, basename='product')
+router.register('product-category', product_view.ProductCategoryViewSet, basename='product-category')
+router.register('product-subcategory', product_view.ProductSubcategoryViewSet, basename='product-subcategory')
+router.register('product-type', product_view.ProductTypeViewSet, basename='product-type')
+router.register('product-unit', product_view.ProductUnitViewSet, basename='product-unit')
+router.register('product-price', product_view.ProductPriceViewSet, basename='product-price')
+router.register('product', product_view.ProductViewSet, basename='product')
+router.register('price-currency', product_view.PriceCurrencyViewSet, basename='price-currency')
 
 app_name = 'bts_app'
 urlpatterns = [
