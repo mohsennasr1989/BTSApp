@@ -6,19 +6,20 @@ from .models import *
 class ProductCategorySerializer(serializers.ModelSerializer):
     class Meta:
         model = ProductCategory
-        fields = ['id', 'name', 'order']
+        fields = ['id', 'name', 'order', 'translate']
 
 
 class ProductSubcategorySerializer(serializers.ModelSerializer):
     class Meta:
         model = ProductSubcategory
-        fields = ['id', 'category', 'name', 'order']
+        fields = ['id', 'category', 'name', 'order', 'translate']
 
 
 class ProductTypeSerializer(serializers.ModelSerializer):
     class Meta:
         model = ProductType
-        fields = ['id', 'subcategory', 'name', 'specification', 'technical_detail', 'site_link', 'image', 'order']
+        fields = ['id', 'subcategory', 'name', 'specification', 'technical_detail'
+            , 'site_link', 'image', 'order', 'translate']
 
 
 class ProductSerializer(serializers.ModelSerializer):
@@ -36,10 +37,10 @@ class ProductPriceSerializer(serializers.ModelSerializer):
 class ProductUnitSerializer(serializers.ModelSerializer):
     class Meta:
         model = ProductPrice
-        fields = ['id', 'name', 'unit', 'package']
+        fields = ['id', 'name', 'unit', 'package', 'translate']
 
 
 class PriceCurrencySerializer(serializers.ModelSerializer):
     class Meta:
         model = PriceCurrency
-        fields = ['id', 'name', 'decimal_number']
+        fields = ['id', 'name', 'decimal_number', 'translate']

@@ -6,13 +6,13 @@ class ProductUnit(models.Model):
     class Meta:
         verbose_name = 'Product Unit'
         verbose_name_plural = 'Product Units'
-        ordering = ('id', 'name', 'unit', 'package')
+        ordering = ('id', 'name', 'unit', 'package', 'translate')
 
     def __str__(self):
         return self.name
 
     name = models.CharField(max_length=100, blank=False, default='Unit')
-    translate = models.ForeignKey(Dictionary, on_delete=models.CASCADE, blank=False)
+    translate = models.ForeignKey(Dictionary, on_delete=models.CASCADE, default=None)
     unit = models.CharField(max_length=100, blank=False, verbose_name='Unit Name')
     package = models.CharField(max_length=100, blank=False, verbose_name='Package Name')
 
@@ -27,7 +27,7 @@ class PriceCurrency(models.Model):
         return self.name
 
     name = models.CharField(max_length=20, default='IRR', verbose_name='Currency Name')
-    translate = models.ForeignKey(Dictionary, on_delete=models.CASCADE, blank=False)
+    translate = models.ForeignKey(Dictionary, on_delete=models.CASCADE, default=None)
     decimal_number = models.IntegerField(default=0, verbose_name='Number of Digits in Decimal')
 
 
@@ -41,7 +41,7 @@ class ProductCategory(models.Model):
         return self.name
 
     name = models.CharField(max_length=100, blank=False, verbose_name='Product Category Name')
-    translate = models.ForeignKey(Dictionary, on_delete=models.CASCADE, blank=False)
+    translate = models.ForeignKey(Dictionary, on_delete=models.CASCADE, default=None)
     order = models.IntegerField(blank=False, verbose_name='Product Category Order')
     image = models.ImageField(blank=False, upload_to='product/category/', default='product/product_holder.jpg',
                               verbose_name='Product Category Image')
@@ -56,9 +56,9 @@ class ProductSubcategory(models.Model):
     def __str__(self):
         return self.name
 
-    category = models.ForeignKey(ProductCategory, on_delete=models.CASCADE, blank=False)
+    category = models.ForeignKey(ProductCategory, on_delete=models.CASCADE, default=None)
     name = models.CharField(max_length=100, blank=False, verbose_name='Product Subcategory Name')
-    translate = models.ForeignKey(Dictionary, on_delete=models.CASCADE, blank=False)
+    translate = models.ForeignKey(Dictionary, on_delete=models.CASCADE, default=None)
     order = models.IntegerField(blank=False, verbose_name='Product Subcategory Order')
     image = models.ImageField(blank=False, upload_to='product/subcategory/', default='product/product_holder.jpg',
                               verbose_name='Product Subcategory Image')
@@ -73,9 +73,9 @@ class ProductType(models.Model):
     def __str__(self):
         return self.name
 
-    subcategory = models.ForeignKey(ProductSubcategory, on_delete=models.CASCADE, blank=False)
+    subcategory = models.ForeignKey(ProductSubcategory, on_delete=models.CASCADE, default=None)
     name = models.CharField(max_length=100, blank=False, verbose_name='Product Type Name')
-    translate = models.ForeignKey(Dictionary, on_delete=models.CASCADE, blank=False)
+    translate = models.ForeignKey(Dictionary, on_delete=models.CASCADE, default=None)
     specification = models.CharField(max_length=100, blank=True, verbose_name='Product Type Specification')
     technical_detail = models.TextField(blank=True, verbose_name='Product Type Technical detail')
     site_link = models.URLField(verbose_name='Product URL to Site Page', default='http://www.bts-co.com')
@@ -93,7 +93,7 @@ class Product(models.Model):
     def __str__(self):
         return self.code
 
-    product_type = models.ForeignKey(ProductType, on_delete=models.CASCADE, blank=False)
+    product_type = models.ForeignKey(ProductType, on_delete=models.CASCADE, default=None)
     code = models.CharField(max_length=10, blank=False, verbose_name='Product Code')
     new_code = models.CharField(max_length=10, blank=False, verbose_name='Product New Code')
     size = models.CharField(max_length=100, blank=False, verbose_name='Product Size')
@@ -112,6 +112,6 @@ class ProductPrice(models.Model):
         return [self.product.code, self.price, self.currency]
 
     tag = models.CharField(max_length=100, blank=False, verbose_name='Product Price List Name')
-    product = models.ForeignKey(Product, on_delete=models.CASCADE, blank=False)
+    product = models.ForeignKey(Product, on_delete=models.CASCADE, default=None)
     price = models.FloatField(default=1.0, verbose_name='Product Price')
     currency = models.ForeignKey(PriceCurrency, on_delete=models.CASCADE)
