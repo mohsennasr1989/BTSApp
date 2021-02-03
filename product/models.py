@@ -1,4 +1,6 @@
 from django.db import models
+from django.utils import timezone
+
 from translate.models import Dictionary
 
 
@@ -15,6 +17,7 @@ class ProductUnit(models.Model):
     translate = models.ForeignKey(Dictionary, on_delete=models.CASCADE, default=None)
     unit = models.CharField(max_length=100, blank=False, verbose_name='Unit Name')
     package = models.CharField(max_length=100, blank=False, verbose_name='Package Name')
+    create_date = models.DateTimeField(auto_now_add=True, verbose_name='Create DateTime')
 
 
 class PriceCurrency(models.Model):
@@ -28,7 +31,8 @@ class PriceCurrency(models.Model):
 
     name = models.CharField(max_length=20, default='IRR', verbose_name='Currency Name')
     translate = models.ForeignKey(Dictionary, on_delete=models.CASCADE, default=None)
-    decimal_number = models.IntegerField(default=0, verbose_name='Number of Digits in Decimal')
+    decimal_number = models.PositiveIntegerField(default=0, verbose_name='Number of Digits in Decimal')
+    create_date = models.DateTimeField(auto_now_add=True, verbose_name='Create DateTime')
 
 
 class ProductCategory(models.Model):
@@ -42,9 +46,10 @@ class ProductCategory(models.Model):
 
     name = models.CharField(max_length=100, blank=False, verbose_name='Product Category Name')
     translate = models.ForeignKey(Dictionary, on_delete=models.CASCADE, default=None)
-    order = models.IntegerField(blank=False, verbose_name='Product Category Order')
+    order = models.PositiveIntegerField(blank=False, verbose_name='Product Category Order')
     image = models.ImageField(blank=False, upload_to='product/category/', default='product/product_holder.jpg',
                               verbose_name='Product Category Image')
+    create_date = models.DateTimeField(auto_now_add=True, verbose_name='Create DateTime')
 
 
 class ProductSubcategory(models.Model):
@@ -59,9 +64,10 @@ class ProductSubcategory(models.Model):
     category = models.ForeignKey(ProductCategory, on_delete=models.CASCADE, default=None)
     name = models.CharField(max_length=100, blank=False, verbose_name='Product Subcategory Name')
     translate = models.ForeignKey(Dictionary, on_delete=models.CASCADE, default=None)
-    order = models.IntegerField(blank=False, verbose_name='Product Subcategory Order')
+    order = models.PositiveIntegerField(blank=False, verbose_name='Product Subcategory Order')
     image = models.ImageField(blank=False, upload_to='product/subcategory/', default='product/product_holder.jpg',
                               verbose_name='Product Subcategory Image')
+    create_date = models.DateTimeField(auto_now_add=True, verbose_name='Create DateTime')
 
 
 class ProductType(models.Model):
@@ -79,9 +85,10 @@ class ProductType(models.Model):
     specification = models.CharField(max_length=100, blank=True, verbose_name='Product Type Specification')
     technical_detail = models.TextField(blank=True, verbose_name='Product Type Technical detail')
     site_link = models.URLField(verbose_name='Product URL to Site Page', default='http://www.bts-co.com')
-    order = models.IntegerField(blank=False, verbose_name='Product Type Order')
+    order = models.PositiveIntegerField(blank=False, verbose_name='Product Type Order')
     image = models.ImageField(blank=False, upload_to='product/products/', default='product/product_holder.jpg',
                               verbose_name='Product Type Image')
+    create_date = models.DateTimeField(auto_now_add=True, verbose_name='Create DateTime')
 
 
 class Product(models.Model):
@@ -98,8 +105,9 @@ class Product(models.Model):
     new_code = models.CharField(max_length=10, blank=False, verbose_name='Product New Code')
     size = models.CharField(max_length=100, blank=False, verbose_name='Product Size')
     unit = models.ForeignKey(ProductUnit, on_delete=models.CASCADE)
-    package_qty = models.IntegerField(default=1, verbose_name='Product Package Quantity')
-    order = models.IntegerField(blank=False, verbose_name='Product Order')
+    package_qty = models.PositiveIntegerField(default=1, verbose_name='Product Package Quantity')
+    order = models.PositiveIntegerField(blank=False, verbose_name='Product Order')
+    create_date = models.DateTimeField(auto_now_add=True, verbose_name='Create DateTime')
 
 
 class ProductPrice(models.Model):
@@ -115,3 +123,4 @@ class ProductPrice(models.Model):
     product = models.ForeignKey(Product, on_delete=models.CASCADE, default=None)
     price = models.FloatField(default=1.0, verbose_name='Product Price')
     currency = models.ForeignKey(PriceCurrency, on_delete=models.CASCADE)
+    create_date = models.DateTimeField(auto_now_add=True, verbose_name='Create DateTime')

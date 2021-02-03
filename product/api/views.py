@@ -3,7 +3,7 @@ from rest_framework import viewsets
 from rest_framework.response import Response
 from .serializers import ProductCategorySerializer, ProductSubcategorySerializer, ProductTypeSerializer, \
     ProductSerializer, ProductUnitSerializer, ProductPriceSerializer, PriceCurrencySerializer
-from .models import ProductCategory, ProductSubcategory, ProductType, Product, ProductUnit, ProductPrice, PriceCurrency
+from product.models import ProductCategory, ProductSubcategory, ProductType, Product, ProductUnit, ProductPrice, PriceCurrency
 
 
 class ProductCategoryViewSet(viewsets.ModelViewSet):

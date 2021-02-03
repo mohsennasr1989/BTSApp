@@ -1,46 +1,45 @@
 from rest_framework import serializers
 
-from .models import *
+from product.models import *
 
 
 class ProductCategorySerializer(serializers.ModelSerializer):
     class Meta:
         model = ProductCategory
-        fields = ['id', 'name', 'order', 'translate']
+        fields = '__all__'
 
 
 class ProductSubcategorySerializer(serializers.ModelSerializer):
     class Meta:
         model = ProductSubcategory
-        fields = ['id', 'category', 'name', 'order', 'translate']
+        fields = '__all__'
 
 
 class ProductTypeSerializer(serializers.ModelSerializer):
     class Meta:
         model = ProductType
-        fields = ['id', 'subcategory', 'name', 'specification', 'technical_detail'
-            , 'site_link', 'image', 'order', 'translate']
+        fields = '__all__'
 
 
 class ProductSerializer(serializers.ModelSerializer):
     class Meta:
         model = Product
-        fields = ['id', 'product_type', 'code', 'new_code', 'size', 'unit', 'package_qty', 'order']
+        fields = '__all__'
 
 
 class ProductPriceSerializer(serializers.ModelSerializer):
     class Meta:
         model = ProductPrice
-        fields = ['id', 'tag', 'product', 'price', 'currency']
+        fields = '__all__'
 
 
 class ProductUnitSerializer(serializers.ModelSerializer):
     class Meta:
         model = ProductPrice
-        fields = ['id', 'name', 'unit', 'package', 'translate']
+        fields = '__all__'
 
 
 class PriceCurrencySerializer(serializers.ModelSerializer):
     class Meta:
         model = PriceCurrency
-        fields = ['id', 'name', 'decimal_number', 'translate']
+        fields = '__all__'

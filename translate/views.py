@@ -1,8 +1,8 @@
+from django.http import HttpResponse
 from django.shortcuts import get_object_or_404
 from rest_framework import viewsets
 from rest_framework.decorators import action
 from rest_framework.response import Response
-
 from .models import Dictionary
 from .serializers import DictionarySerializer
 
@@ -20,15 +20,13 @@ class DictionaryViewSet(viewsets.ModelViewSet):
         serializer = DictionarySerializer(dictionary)
         return Response(serializer.data)
 
-    @action(detail=True, methods=['GET'], pk=None)
-    def get_translate(self, request):
-        if request.data['lang'] is not None:
-            language = request.data['lang']
-            if language == 'fa':
-                return self.queryset.get('fa_translate')
-            elif language == 'en':
-                return self.queryset.get('en_translate')
-            elif language == 'ar':
-                return self.queryset.get('ar_translate')
-            elif language == 'ru':
-                return self.queryset.get('ru_translate')
+    @action(detail=True, methods=['GET'])
+    def get_translate(self, request, pk=None):
+        serializer = DictionarySerializer(get_object_or_404(self.queryset, pk=pk))
+        # if request.['lang'] is not None:
+        #     if request.GET.data['lang'] == 'en':
+        #         return Response(serializer.data['en_translate'])
+        #     elif request.GET.data['lang'] == 'fa':
+        #         return Response(serializer.data['fa_translate'])
+        return Response(serializer.data['fa_translate'])
+
