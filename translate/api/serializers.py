@@ -1,6 +1,6 @@
 from rest_framework import serializers
 
-from .models import Dictionary
+from translate.models import Dictionary
 
 
 class DictionarySerializer(serializers.ModelSerializer):

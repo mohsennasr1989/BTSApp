@@ -1,10 +1,12 @@
 from django.shortcuts import get_object_or_404
-from rest_framework import viewsets
+from rest_framework import viewsets, status
 from rest_framework.decorators import action
+from rest_framework.permissions import IsAuthenticated, AllowAny, IsAdminUser, IsAuthenticatedOrReadOnly
 from rest_framework.response import Response
 from .serializers import ProductCategorySerializer, ProductSubcategorySerializer, ProductTypeSerializer, \
     ProductSerializer, ProductUnitSerializer, ProductPriceSerializer, PriceCurrencySerializer
-from product.models import ProductCategory, ProductSubcategory, ProductType, Product, ProductUnit, ProductPrice, PriceCurrency
+from product.models import ProductCategory, ProductSubcategory, ProductType, Product, ProductUnit, ProductPrice, \
+    PriceCurrency
 
 
 class ProductCategoryViewSet(viewsets.ModelViewSet):
@@ -68,13 +70,48 @@ class ProductViewSet(viewsets.ModelViewSet):
             code = request.query_params.get('id')
             serializer = ProductSerializer(get_object_or_404(self.queryset, code=code))
             return Response(serializer.data)
+        return Response(status.HTTP_404_NOT_FOUND)
+
+    @action(detail=False, methods=['GET'])
+    def get_by_category(self, request):
+        if request.query_params.get('id') is not None:
+            category = request.query_params.get('id')
+
+            subcategories = ProductSubcategory.objects.filter(category=category)
+            product_type = ProductType.objects.filter(subcategory__in=subcategories)
+
+            queryset = self.queryset.filter(product_type__in=product_type)
+            serializer = ProductSerializer(queryset, many=True)
+            return Response(serializer.data)
+        return Response(status.HTTP_404_NOT_FOUND)
+
+    @action(detail=False, methods=['GET'])
+    def get_by_subcategory(self, request):
+        if request.query_params.get('id') is not None:
+            subcategory = request.query_params.get('id')
+            product_type = ProductType.objects.filter(subcategory=subcategory)
+
+            queryset = self.queryset.filter(product_type__in=product_type)
+            serializer = ProductSerializer(queryset, many=True)
+            return Response(serializer.data)
+        return Response(status.HTTP_404_NOT_FOUND)
+
+    def get_permissions(self):
+        permission_classes = []
+        if IsAuthenticated:
+            permission_classes = [AllowAny]
+        elif IsAdminUser:
+            permission_classes = [AllowAny]
+        return [permission() for permission in permission_classes]
 
     @action(detail=False, methods=['GET'])
     def get_by_type(self, request):
         if request.query_params.get('id') is not None:
-            code = request.query_params.get('id')
-            serializer = ProductSerializer(get_object_or_404(self.queryset.filter(product_type=code)))
+            product_type = request.query_params.get('id')
+            queryset = self.queryset.filter(product_type=product_type)
+            serializer = ProductSerializer(queryset, many=True)
             return Response(serializer.data)
+        return Response(status.HTTP_404_NOT_FOUND)
 
 
 class ProductUnitViewSet(viewsets.ModelViewSet):

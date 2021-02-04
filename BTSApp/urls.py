@@ -19,7 +19,7 @@ from django.contrib import admin
 from django.urls import path, include
 from rest_framework import routers
 from product.api import views as product_view
-from translate import views as translate_view
+from translate.api import views as translate_view
 
 router = routers.SimpleRouter()
 router.register('product-category', product_view.ProductCategoryViewSet, basename='product-category')
