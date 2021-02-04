@@ -1,5 +1,6 @@
 from django.shortcuts import get_object_or_404
 from rest_framework import viewsets
+from rest_framework.decorators import action
 from rest_framework.response import Response
 from .serializers import ProductCategorySerializer, ProductSubcategorySerializer, ProductTypeSerializer, \
     ProductSerializer, ProductUnitSerializer, ProductPriceSerializer, PriceCurrencySerializer
@@ -60,6 +61,20 @@ class ProductViewSet(viewsets.ModelViewSet):
         product = get_object_or_404(self.queryset, pk=pk)
         serializer = ProductSerializer(product)
         return Response(serializer.data)
+
+    @action(detail=False, methods=['GET'])
+    def get_by_code(self, request):
+        if request.query_params.get('id') is not None:
+            code = request.query_params.get('id')
+            serializer = ProductSerializer(get_object_or_404(self.queryset, code=code))
+            return Response(serializer.data)
+
+    @action(detail=False, methods=['GET'])
+    def get_by_type(self, request):
+        if request.query_params.get('id') is not None:
+            code = request.query_params.get('id')
+            serializer = ProductSerializer(get_object_or_404(self.queryset.filter(product_type=code)))
+            return Response(serializer.data)
 
 
 class ProductUnitViewSet(viewsets.ModelViewSet):

@@ -1,6 +1,4 @@
 from django.db import models
-from django.utils import timezone
-
 from translate.models import Dictionary
 
 
@@ -104,7 +102,7 @@ class Product(models.Model):
     code = models.CharField(max_length=10, blank=False, verbose_name='Product Code')
     new_code = models.CharField(max_length=10, blank=False, verbose_name='Product New Code')
     size = models.CharField(max_length=100, blank=False, verbose_name='Product Size')
-    unit = models.ForeignKey(ProductUnit, on_delete=models.CASCADE)
+    unit = models.ForeignKey(ProductUnit, on_delete=models.CASCADE, default=None)
     package_qty = models.PositiveIntegerField(default=1, verbose_name='Product Package Quantity')
     order = models.PositiveIntegerField(blank=False, verbose_name='Product Order')
     create_date = models.DateTimeField(auto_now_add=True, verbose_name='Create DateTime')
@@ -122,5 +120,5 @@ class ProductPrice(models.Model):
     tag = models.CharField(max_length=100, blank=False, verbose_name='Product Price List Name')
     product = models.ForeignKey(Product, on_delete=models.CASCADE, default=None)
     price = models.FloatField(default=1.0, verbose_name='Product Price')
-    currency = models.ForeignKey(PriceCurrency, on_delete=models.CASCADE)
+    currency = models.ForeignKey(PriceCurrency, on_delete=models.CASCADE, default=None)
     create_date = models.DateTimeField(auto_now_add=True, verbose_name='Create DateTime')

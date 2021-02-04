@@ -6,4 +6,5 @@ from .models import Dictionary
 class DictionarySerializer(serializers.ModelSerializer):
     class Meta:
         model = Dictionary
-        fields = ['id', 'item_name', 'fa_translate', 'en_translate', 'ar_translate', 'ru_translate']
+        fields = '__all__'
+        read_only_fields = ['id', 'create_date']
