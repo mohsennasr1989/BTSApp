@@ -20,6 +20,7 @@ from django.urls import path, include
 from rest_framework import routers
 from product.api import views as product_view
 from translate.api import views as translate_view
+from user.api import views as user_view
 
 router = routers.SimpleRouter()
 router.register('product-category', product_view.ProductCategoryViewSet, basename='product-category')
@@ -30,6 +31,7 @@ router.register('product-price', product_view.ProductPriceViewSet, basename='pro
 router.register('product', product_view.ProductViewSet, basename='product')
 router.register('price-currency', product_view.PriceCurrencyViewSet, basename='price-currency')
 router.register('translate', translate_view.DictionaryViewSet, basename='translate')
+router.register('user', user_view.CustomUserViewSet, basename='user')
 
 app_name = 'bts_app'
 urlpatterns = [

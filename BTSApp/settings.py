@@ -28,8 +28,11 @@ ALLOWED_HOSTS = ['*']
 
 # Application definition
 
+
 INSTALLED_APPS = [
     'rest_framework',
+    'phonenumber_field',
+    'phonenumbers',
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
@@ -39,9 +42,7 @@ INSTALLED_APPS = [
     'product.apps.ProductConfig',
     'translate.apps.TranslateConfig',
     'user.apps.UserConfig',
-    'phonenumber_field',
 ]
-
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',

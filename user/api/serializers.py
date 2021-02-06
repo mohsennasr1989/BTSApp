@@ -5,11 +5,16 @@ from user.models import CustomUserModel
 from phonenumber_field import validators as phone_validators
 
 
-class UserSerializer(serializers.ModelSerializer):
+class CustomUserSerializer(serializers.ModelSerializer):
+    activity_name = serializers.ReadOnlyField(source='activity.__str__')
+    location_name = serializers.ReadOnlyField(source='location.__str__')
+
     class Meta:
         model = CustomUserModel
-        fields = '__all__'
-        read_only_fields = ['id', 'create_date']
+        fields = ('id', 'last_login', 'is_superuser', 'is_staff', 'is_active', 'date_joined', 'first_name', 'last_name',
+                  'username', 'password', 'address', 'phone', 'location_name', 'activity_name', 'groups',
+                  'user_permissions')
+        read_only_fields = ['id', 'last_login', 'date_joined']
 
         def create(self, validated_data):
             validated_data['username'] = validated_data['username']
@@ -34,4 +39,4 @@ class UserSerializer(serializers.ModelSerializer):
             if errors:
                 raise serializers.ValidationError(errors)
 
-            return super(UserSerializer, self).validate(data)
+            return super(CustomUserSerializer, self).validate(data)
