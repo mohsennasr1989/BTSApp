@@ -3,7 +3,7 @@ from django.contrib.auth.models import AbstractUser
 from django.db import models
 
 
-class LocationModels(models.Model):
+class LocationModel(models.Model):
 
     def __str__(self):
         return f'{self.country} - {self.province} - {self.city}'
@@ -87,7 +87,7 @@ class CustomUserModel(AbstractUser):
     last_name = models.CharField(verbose_name='Last Name', max_length=50, default='Last Name')
     username = models.CharField(verbose_name='Mobile Number', max_length=20, unique=True)
     password = models.CharField(verbose_name='Password', max_length=100)
-    location = models.ForeignKey(LocationModels, on_delete=models.CASCADE, default=1)
+    location = models.ForeignKey(LocationModel, on_delete=models.CASCADE, default=1)
     activity = models.ForeignKey(UserActivityModel, on_delete=models.CASCADE, default=1)
     address = models.TextField(verbose_name='User Address', default='')
     phone = models.CharField(verbose_name='User Phone', max_length=100, default='')
