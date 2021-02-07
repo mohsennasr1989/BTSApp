@@ -34,9 +34,9 @@ class CustomUserAdmin(ImportExportModelAdmin, ModelAdmin):
 @admin.register(LocationModel)
 class LocationAdmin(ImportExportModelAdmin, ModelAdmin):
     model = LocationModel
-    list_display = ('country', 'province', 'city')
-    search_fields = ('country', 'province', 'city')
-    list_filter = ('country', 'province', 'city')
+    list_display = ('id', 'country', 'province', 'city')
+    search_fields = ('id', 'country', 'province', 'city')
+    list_filter = ('id', 'country', 'province', 'city')
     export_order = ('id', 'country', 'province', 'city', 'create_date')
 
     def get_import_formats(self):
