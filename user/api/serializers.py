@@ -1,7 +1,7 @@
 from django.core import exceptions
 from rest_framework import serializers
 import django.contrib.auth.password_validation as validators
-from user.models import CustomUserModel
+from user.models import CustomUserModel, LocationModel
 from phonenumber_field import validators as phone_validators
 
 
@@ -40,3 +40,10 @@ class CustomUserSerializer(serializers.ModelSerializer):
                 raise serializers.ValidationError(errors)
 
             return super(CustomUserSerializer, self).validate(data)
+
+
+class LocationSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = LocationModel
+        fields = ('id', 'country', 'province', 'city')
+        read_only_fields = ['id', 'create_date']
