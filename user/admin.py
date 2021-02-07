@@ -1,4 +1,3 @@
-
 from import_export.admin import ImportExportModelAdmin
 from import_export.formats import base_formats
 from django.contrib import admin
@@ -8,7 +7,6 @@ from user.models import CustomUserModel, LocationModel, UserActivityModel
 
 @admin.register(CustomUserModel)
 class CustomUserAdmin(ImportExportModelAdmin, ModelAdmin):
-
     model = CustomUserModel
     list_display = ('id', 'first_name', 'last_name', 'username', 'password', 'location', 'activity', 'address', 'phone')
     search_fields = (
@@ -35,7 +33,6 @@ class CustomUserAdmin(ImportExportModelAdmin, ModelAdmin):
 
 @admin.register(LocationModel)
 class LocationAdmin(ImportExportModelAdmin, ModelAdmin):
-
     model = LocationModel
     list_display = ('country', 'province', 'city')
     search_fields = ('country', 'province', 'city')
@@ -61,7 +58,6 @@ class LocationAdmin(ImportExportModelAdmin, ModelAdmin):
 
 @admin.register(UserActivityModel)
 class UserActivityAdmin(ImportExportModelAdmin, ModelAdmin):
-
     model = UserActivityModel
     list_display = ('id', 'activity')
     search_fields = ('id', 'activity')
