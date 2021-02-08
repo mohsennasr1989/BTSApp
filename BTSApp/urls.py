@@ -16,11 +16,13 @@ Including another URLconf
 from django.conf import settings
 from django.conf.urls.static import static
 from django.contrib import admin
+from django.contrib.auth import views as auth_views
 from django.urls import path, include
 from rest_framework import routers
 from product.api import views as product_view
 from translate.api import views as translate_view
 from user.api import views as user_view
+from rest_framework.authtoken import views as token_views
 
 router = routers.SimpleRouter()
 router.register('product-category', product_view.ProductCategoryViewSet, basename='product-category')
@@ -37,5 +39,8 @@ app_name = 'bts_app'
 urlpatterns = [
                   path('', include(router.urls)),
                   path('admin/', admin.site.urls),
+                  path('account/login/', auth_views.LoginView.as_view(template_name='user/login.html'), name='login'),
+                  path('account/reset_password/', auth_views.PasswordResetView.as_view(template_name='user/form.html'), name='password_reset'),
+                  path('tokens/', token_views.obtain_auth_token),
               ] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT) \
                 + static(settings.STATIC_URL, document_root=settings.STATIC_ROOT)

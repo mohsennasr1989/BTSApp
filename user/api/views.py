@@ -1,19 +1,22 @@
 from django.contrib.auth import authenticate, login
+from django.contrib.auth.decorators import login_required, permission_required
 from django.shortcuts import get_object_or_404
 from django.views.decorators.csrf import csrf_exempt
 from rest_framework import viewsets, status
-from rest_framework.decorators import api_view, permission_classes, action
+from rest_framework.decorators import permission_classes, action
 from rest_framework.permissions import AllowAny
 from rest_framework.response import Response
-
 from .serializers import CustomUserSerializer
 from ..models import CustomUserModel, UserActivityModel, LocationModel
+from rest_framework.authtoken.models import Token
 
 
 class CustomUserViewSet(viewsets.ModelViewSet):
     queryset = CustomUserModel.objects.all()
     serializer_class = CustomUserSerializer
 
+    @login_required
+    @permission_required('user.view', login_url='/user/login')
     def list(self, request, **kwargs):
         serializer = CustomUserSerializer(self.queryset, many=True)
         return Response(serializer.data)
@@ -92,7 +95,7 @@ class CustomUserViewSet(viewsets.ModelViewSet):
                         status=status.HTTP_200_OK)
 
     @csrf_exempt
-    @action(detail=False, methods=['POST'])
+    @action(detail=False, methods=['GET', 'POST'])
     @permission_classes((AllowAny,))
     def login(self, request):
         try:
@@ -101,6 +104,7 @@ class CustomUserViewSet(viewsets.ModelViewSet):
             user = authenticate(request, username=username, password=password)
             if user is not None:
                 login(request=request, user=user)
+                Token.objects.get_or_create(user=user)
             else:
                 return Response({'status': "Invalid username or password."},
                                 status=status.HTTP_401_UNAUTHORIZED)
@@ -108,3 +112,5 @@ class CustomUserViewSet(viewsets.ModelViewSet):
             request.session.flush()
             return Response({'status': "Login failed.", 'error': str(e)},
                             status=status.HTTP_400_BAD_REQUEST)
+        return Response({'status': "Login success."},
+                        status=status.HTTP_200_OK)
