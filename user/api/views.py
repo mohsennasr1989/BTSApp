@@ -104,7 +104,7 @@ class CustomUserViewSet(viewsets.ModelViewSet):
             user = authenticate(request, username=username, password=password)
             if user is not None:
                 login(request=request, user=user)
-                Token.objects.get_or_create(user=user)
+                token = Token.objects.get_or_create(user=user)
             else:
                 return Response({'status': "Invalid username or password."},
                                 status=status.HTTP_401_UNAUTHORIZED)
@@ -112,5 +112,5 @@ class CustomUserViewSet(viewsets.ModelViewSet):
             request.session.flush()
             return Response({'status': "Login failed.", 'error': str(e)},
                             status=status.HTTP_400_BAD_REQUEST)
-        return Response({'status': "Login success."},
+        return Response({'status': "Login success.", 'token': token},
                         status=status.HTTP_200_OK)
