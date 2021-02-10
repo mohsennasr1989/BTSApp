@@ -3,6 +3,7 @@ from django.contrib.auth.decorators import login_required, permission_required
 from django.shortcuts import get_object_or_404
 from django.views.decorators.csrf import csrf_exempt
 from rest_framework import viewsets, status
+from rest_framework.authentication import SessionAuthentication, BasicAuthentication
 from rest_framework.decorators import permission_classes, action
 from rest_framework.permissions import AllowAny
 from rest_framework.response import Response
@@ -12,6 +13,7 @@ from rest_framework.authtoken.models import Token
 
 
 class CustomUserViewSet(viewsets.ModelViewSet):
+    authentication_classes = [SessionAuthentication, BasicAuthentication]
     queryset = CustomUserModel.objects.all()
     serializer_class = CustomUserSerializer
 
@@ -21,12 +23,16 @@ class CustomUserViewSet(viewsets.ModelViewSet):
         serializer = CustomUserSerializer(self.queryset, many=True)
         return Response(serializer.data)
 
+    @login_required
+    @permission_required('user.view', login_url='/user/login')
     def retrieve(self, request, pk=None, **kwargs):
         product_type = get_object_or_404(self.queryset, pk=pk)
         serializer = CustomUserSerializer(product_type)
         return Response(serializer.data)
 
     @action(detail=False, methods=['GET'])
+    @login_required
+    @permission_required('user.view', login_url='/user/login')
     def get_by_username(self, request):
         if request.query_params.get('id') is not None:
             username = request.query_params.get('id')
@@ -35,11 +41,15 @@ class CustomUserViewSet(viewsets.ModelViewSet):
         return Response(status.HTTP_404_NOT_FOUND)
 
     @action(detail=False, methods=['GET'])
+    @login_required
+    @permission_required('user.view', login_url='/user/login')
     def get_active_users(self, request):
         serializer = CustomUserSerializer(get_object_or_404(self.queryset, is_active=True))
         return Response(serializer.data)
 
     @action(detail=False, methods=['GET'])
+    @login_required
+    @permission_required('user.view', login_url='/user/login')
     def get_by_activity(self, request):
         if request.query_params.get('activity') is not None:
             activity_name = request.query_params.get('activity')
@@ -54,6 +64,8 @@ class CustomUserViewSet(viewsets.ModelViewSet):
         return Response(status.HTTP_404_NOT_FOUND)
 
     @action(detail=False, methods=['GET'])
+    @login_required
+    @permission_required('user.view', login_url='/user/login')
     def get_by_province(self, request):
         if request.query_params.get('province') is not None:
             province_name = request.query_params.get('province')
@@ -86,6 +98,8 @@ class CustomUserViewSet(viewsets.ModelViewSet):
                                    phone=data['phone'])
             user.set_password(data['password'])
             user.save()
+            user.login_token = Token.objects.get_or_create(user=user)
+            user.save()
 
         except Exception as e:
             request.session.flush()
@@ -104,7 +118,10 @@ class CustomUserViewSet(viewsets.ModelViewSet):
             user = authenticate(request, username=username, password=password)
             if user is not None:
                 login(request=request, user=user)
-                token = Token.objects.get_or_create(user=user)
+                token = Token.objects.get_or_create(user=user, self=self)
+                user.login_token = token
+                print(token.key)
+                user.save()
             else:
                 return Response({'status': "Invalid username or password."},
                                 status=status.HTTP_401_UNAUTHORIZED)
@@ -112,5 +129,5 @@ class CustomUserViewSet(viewsets.ModelViewSet):
             request.session.flush()
             return Response({'status': "Login failed.", 'error': str(e)},
                             status=status.HTTP_400_BAD_REQUEST)
-        return Response({'status': "Login success.", 'token': token},
+        return Response({'status': "Login success."},
                         status=status.HTTP_200_OK)

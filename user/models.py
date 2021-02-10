@@ -1,6 +1,11 @@
 from django.contrib.auth.base_user import AbstractBaseUser
 from django.contrib.auth.models import AbstractUser
 from django.db import models
+from django.db.models.signals import post_save
+from django.dispatch import receiver
+from rest_framework.authtoken.models import Token
+
+from BTSApp.settings import AUTH_USER_MODEL
 
 
 class LocationModel(models.Model):
@@ -34,8 +39,11 @@ class CustomUserModel(AbstractUser):
     password = models.CharField(verbose_name='Password', max_length=100)
     location = models.ForeignKey(LocationModel, on_delete=models.CASCADE, default=1)
     activity = models.ForeignKey(UserActivityModel, on_delete=models.CASCADE, default=1)
-    address = models.TextField(verbose_name='User Address', default='')
-    phone = models.CharField(verbose_name='User Phone', max_length=100, default='')
+    address = models.TextField(verbose_name='User Address', blank=True, default='')
+    phone = models.CharField(verbose_name='User Phone', blank=True, max_length=100, default='')
+    rule = models.CharField(verbose_name='User Rule', blank=True, max_length=100, default='')
+    login_token = models.CharField(verbose_name='User login Token', blank=True, max_length=200, default='')
+    firebase_token = models.CharField(verbose_name='User firebase Token', blank=True, max_length=200, default='')
 
     def __str__(self):
         return f'{self.first_name} {self.last_name} - {self.username}'
@@ -43,3 +51,11 @@ class CustomUserModel(AbstractUser):
     def save(self, *args, **kwargs):
         self.username = str(self.username)
         super(CustomUserModel, self).save(*args, **kwargs)
+
+
+@receiver(post_save, sender=AUTH_USER_MODEL)
+def create_auth_token(sender, instance=None, created=False, **kwargs):
+    for user in CustomUserModel.objects.all():
+        Token.objects.get_or_create(user=user)
+    if created:
+        Token.objects.create(user=instance)

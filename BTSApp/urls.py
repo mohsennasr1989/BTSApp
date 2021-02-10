@@ -39,8 +39,8 @@ app_name = 'bts_app'
 urlpatterns = [
                   path('', include(router.urls)),
                   path('admin/', admin.site.urls),
-                  path('account/login/', auth_views.LoginView.as_view(template_name='user/login.html'), name='login'),
-                  path('account/reset_password/', auth_views.PasswordResetView.as_view(template_name='user/form.html'), name='password_reset'),
+                  path('accounts/login/', auth_views.LoginView.as_view(template_name='user/login.html'), name='login'),
+                  path('accounts/reset_password/', auth_views.PasswordResetView.as_view(template_name='user/form.html'), name='password_reset'),
                   path('tokens/', token_views.obtain_auth_token),
               ] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT) \
                 + static(settings.STATIC_URL, document_root=settings.STATIC_ROOT)

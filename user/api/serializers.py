@@ -13,7 +13,7 @@ class CustomUserSerializer(serializers.ModelSerializer):
         model = CustomUserModel
         fields = ('id', 'last_login', 'is_superuser', 'is_staff', 'is_active', 'date_joined', 'first_name', 'last_name',
                   'username', 'password', 'address', 'phone', 'location_name', 'activity_name', 'groups',
-                  'user_permissions')
+                  'user_permissions', 'rule', 'login_token', 'firebase_token')
         read_only_fields = ['id', 'last_login', 'date_joined']
 
         def create(self, validated_data):
@@ -30,7 +30,6 @@ class CustomUserSerializer(serializers.ModelSerializer):
                 if data.get('password') != data.get('confirm_password'):
                     errors['password'] = "Password and Confirm Password do not match!"
                 phone_validators.validate_international_phonenumber(data.get('mobile_number'))
-
                 if CustomUserModel.objects.filter(username=data.get('mobile_number')):
                     errors['mobile_number'] = "User with this phone number already exists."
             except exceptions.ValidationError as e:
