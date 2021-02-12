@@ -33,7 +33,7 @@ router.register('product-price', product_view.ProductPriceViewSet, basename='pro
 router.register('product', product_view.ProductViewSet, basename='product')
 router.register('price-currency', product_view.PriceCurrencyViewSet, basename='price-currency')
 router.register('translate', translate_view.DictionaryViewSet, basename='translate')
-router.register('user', user_view.CustomUserViewSet, basename='user')
+router.register('users', user_view.CustomUserViewSet, basename='users')
 
 app_name = 'bts_app'
 urlpatterns = [

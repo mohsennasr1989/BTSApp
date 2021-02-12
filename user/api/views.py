@@ -1,8 +1,10 @@
-from django.contrib.auth import authenticate, login
+from django.contrib.auth import authenticate, login, logout
+from django.contrib.auth.decorators import login_required
 from django.shortcuts import get_object_or_404
 from django.views.decorators.csrf import csrf_exempt
 from rest_framework import status
-from rest_framework.decorators import action
+from rest_framework.decorators import action, permission_classes
+from rest_framework.permissions import AllowAny, IsAuthenticated, IsAdminUser
 from rest_framework.response import Response
 from rest_framework.viewsets import ViewSet
 
@@ -12,31 +14,26 @@ from rest_framework.authtoken.models import Token
 
 
 class CustomUserViewSet(ViewSet):
-    # authentication_classes = [TokenAuthentication]
     queryset = CustomUserModel.objects.all()
     serializer_class = CustomUserSerializer
 
-    # @login_required
-    # @permission_required('user.view', login_url='/user/login')
+    @permission_classes((IsAuthenticated,))
     def list(self, request, **kwargs):
         serializer = CustomUserSerializer(self.queryset, many=True)
         return Response(serializer.data, status=status.HTTP_200_OK)
 
-    # @login_required
-    # @permission_required('user.view', login_url='/user/login')
+    @permission_classes((IsAuthenticated,))
     def retrieve(self, request, pk=None, **kwargs):
         user = get_object_or_404(self.queryset, pk=pk)
         serializer = CustomUserSerializer(user)
-        # if serializer.is_valid():
         return Response(serializer.data, status=status.HTTP_200_OK)
-        # return Response(status=status.HTTP_400_BAD_REQUEST)
 
     @action(detail=False, methods=['GET'])
-    # @login_required
-    # @permission_required('user.view', login_url='/user/login')
+    @login_required
+    @permission_classes((IsAuthenticated,))
     def get_by_username(self, request):
-        if request.query_params.get('id') is not None:
-            username = request.query_params.get('id')
+        if request.query_params.get('user_name') is not None:
+            username = request.query_params.get('user_name')
             serializer = CustomUserSerializer(get_object_or_404(self.queryset, username=username))
             if serializer.is_valid():
                 return Response(serializer.data, status=status.HTTP_200_OK)
@@ -44,17 +41,18 @@ class CustomUserViewSet(ViewSet):
         return Response(status.HTTP_404_NOT_FOUND)
 
     @action(detail=False, methods=['GET'])
-    # @login_required
-    # @permission_required('user.view', login_url='/user/login')
+    @login_required
+    @permission_classes((IsAuthenticated,))
     def get_active_users(self, request):
-        serializer = CustomUserSerializer(get_object_or_404(self.queryset, is_active=True))
-        if serializer.is_valid():
+        users = CustomUserModel.objects.filter(is_active=True)
+        serializer = CustomUserSerializer(users, many=True)
+        if serializer is not None:
             return Response(serializer.data, status=status.HTTP_200_OK)
         return Response(status=status.HTTP_400_BAD_REQUEST)
 
     @action(detail=False, methods=['GET'])
-    # @login_required
-    # @permission_required('user.view', login_url='/user/login')
+    @login_required
+    @permission_classes((IsAuthenticated,))
     def get_by_activity(self, request):
         if request.query_params.get('activity') is not None:
             activity_name = request.query_params.get('activity')
@@ -71,8 +69,8 @@ class CustomUserViewSet(ViewSet):
         return Response(status.HTTP_404_NOT_FOUND)
 
     @action(detail=False, methods=['GET'])
-    # @login_required
-    # @permission_required('user.view', login_url='/user/login')
+    @login_required
+    @permission_classes((IsAuthenticated,))
     def get_by_province(self, request):
         if request.query_params.get('province') is not None:
             province_name = request.query_params.get('province')
@@ -90,7 +88,7 @@ class CustomUserViewSet(ViewSet):
 
     @csrf_exempt
     @action(detail=False, methods=['POST'])
-    # @permission_classes((AllowAny,))
+    @permission_classes((AllowAny,))
     def signup(self, request):
         try:
             data = request.data
@@ -119,7 +117,7 @@ class CustomUserViewSet(ViewSet):
 
     @csrf_exempt
     @action(detail=False, methods=['GET', 'POST'])
-    # @permission_classes((AllowAny,))
+    @permission_classes((AllowAny,))
     def login(self, request):
         try:
             username = request.POST['username']
@@ -143,23 +141,33 @@ class CustomUserViewSet(ViewSet):
 
     @csrf_exempt
     @action(detail=False, methods=['POST'])
+    @permission_classes((IsAuthenticated,))
     def update_user(self, request):
-        serializer = CustomUserSerializer(data=request.data)
-        if serializer.is_valid():
-            serializer.save()
-            return Response(serializer.data, status=status.HTTP_200_OK)
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+        if request.data is not None:
+            serializer = CustomUserSerializer(data=request.data)
+            if serializer.is_valid():
+                serializer.save()
+                return Response(serializer.data, status=status.HTTP_200_OK)
+            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+        return Response('Request Failed', status=status.HTTP_400_BAD_REQUEST)
 
     @action(detail=False, methods=['GET'])
+    @permission_classes((IsAdminUser,))
     def get_tokens_list(self, request):
         tokens = Token.objects.all()
         serializer = TokenSerializer(tokens, many=True)
         return Response(serializer.data)
 
     @action(detail=False, methods=['GET'])
+    @permission_classes((IsAdminUser,))
     def get_token(self, request):
-        if request.query_params.get('id') is not None:
-            user_id = request.query_params.get('id')
+        try:
+            user_id = request.GET['user_id']
+        except Exception as e:
+            request.session.flush()
+            return Response({'status': "Request failed.", 'error': str(e)},
+                            status=status.HTTP_400_BAD_REQUEST)
+        if user_id is not None:
             try:
                 token = Token.objects.get(user=user_id)
             except Exception as e:
@@ -169,6 +177,7 @@ class CustomUserViewSet(ViewSet):
         return Response(status=status.HTTP_400_BAD_REQUEST)
 
     @action(detail=False, methods=['GET'])
+    @permission_classes((IsAdminUser,))
     def update_tokens(self, request):
         is_modified = False
         for user in CustomUserModel.objects.all():
@@ -185,9 +194,15 @@ class CustomUserViewSet(ViewSet):
         return Response(status=status.HTTP_204_NO_CONTENT)
 
     @action(detail=False, methods=['GET'])
+    @permission_classes((IsAuthenticated,))
     def get_user_by_token(self, request):
-        if request.query_params.get('token') is not None:
-            token_value = request.query_params.get('token')
+        try:
+            token_value = request.GET['token']
+        except Exception as e:
+            request.session.flush()
+            return Response({'status': "Request failed.", 'error': str(e)},
+                            status=status.HTTP_400_BAD_REQUEST)
+        if token_value is not None:
             try:
                 token = Token.objects.get(key=token_value)
             except Exception as e:
@@ -196,3 +211,26 @@ class CustomUserViewSet(ViewSet):
             serializer = CustomUserSerializer(user)
             return Response(serializer.data, status=status.HTTP_200_OK)
         return Response(status=status.HTTP_400_BAD_REQUEST)
+
+    @csrf_exempt
+    @action(detail=False, methods=['GET', 'POST'])
+    @permission_classes((IsAuthenticated,))
+    def logout(self, request):
+        token = None
+        try:
+            if request.method == 'POST':
+                token = request.POST['token']
+            elif request.method == 'GET':
+                token = request.GET['token']
+        except Exception as e:
+            request.session.flush()
+            return Response({'status': "Logout failed.", 'error': str(e)},
+                            status=status.HTTP_400_BAD_REQUEST)
+        serializer = CustomUserSerializer(get_object_or_404(self.queryset, login_token=token))
+        if serializer is not None:
+            logout(request)
+        else:
+            return Response({'status': "Invalid user."},
+                            status=status.HTTP_401_UNAUTHORIZED)
+        return Response({'status': "Logout success."},
+                        status=status.HTTP_200_OK)
