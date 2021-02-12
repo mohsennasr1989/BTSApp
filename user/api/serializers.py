@@ -1,8 +1,10 @@
-from django.core import exceptions
-from rest_framework import serializers
+from django.core.exceptions import ValidationError
+from rest_framework import serializers, status
 import django.contrib.auth.password_validation as validators
+from rest_framework.authtoken.models import Token
+from rest_framework.response import Response
+
 from user.models import CustomUserModel, LocationModel
-from phonenumber_field import validators as phone_validators
 
 
 class CustomUserSerializer(serializers.ModelSerializer):
@@ -11,34 +13,33 @@ class CustomUserSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = CustomUserModel
-        fields = ('id', 'last_login', 'is_superuser', 'is_staff', 'is_active', 'date_joined', 'first_name', 'last_name',
+        fields = ('last_login', 'is_superuser', 'is_staff', 'is_active', 'date_joined', 'first_name', 'last_name',
                   'username', 'password', 'address', 'phone', 'location_name', 'activity_name', 'groups',
                   'user_permissions', 'rule', 'login_token', 'firebase_token')
         read_only_fields = ['id', 'last_login', 'date_joined']
 
         def create(self, validated_data):
             validated_data['username'] = validated_data['username']
-            user = CustomUserModel.objects.create_user(**validated_data)
+            user = CustomUserModel.objects.create(**validated_data)
             return user
 
         def validate(self, data):
-            user = CustomUserModel(**data)
-            password = data.get('password')
             errors = dict()
+            if CustomUserModel.objects.filter(username=data.get('mobile_number')):
+                errors['mobile_number'] = "User with this phone number already exists."
+            if data.get('password') != data.get('confirm_password'):
+                errors['password_match'] = "Password and Confirm Password do not match!"
             try:
-                validators.validate_password(password=password, user=user)
-                if data.get('password') != data.get('confirm_password'):
-                    errors['password'] = "Password and Confirm Password do not match!"
-                phone_validators.validate_international_phonenumber(data.get('mobile_number'))
-                if CustomUserModel.objects.filter(username=data.get('mobile_number')):
-                    errors['mobile_number'] = "User with this phone number already exists."
-            except exceptions.ValidationError as e:
-                errors['validation'] = list(e.messages)
+                validators.validate_password(password=data.get('password'))
+            except ValidationError as e:
+                errors['password'] = list(e.messages)
 
             if errors:
                 raise serializers.ValidationError(errors)
+            return data
 
-            return super(CustomUserSerializer, self).validate(data)
+        def update(self, instance, validated_data):
+            pass
 
 
 class LocationSerializer(serializers.ModelSerializer):
@@ -46,3 +47,11 @@ class LocationSerializer(serializers.ModelSerializer):
         model = LocationModel
         fields = ('id', 'country', 'province', 'city')
         read_only_fields = ['id', 'create_date']
+
+
+class TokenSerializer(serializers.ModelSerializer):
+    user_name = serializers.ReadOnlyField(source='user.__str__')
+
+    class Meta:
+        model = Token
+        fields = ('key', 'user', 'user_name', 'created')

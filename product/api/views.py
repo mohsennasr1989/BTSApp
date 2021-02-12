@@ -57,19 +57,23 @@ class ProductViewSet(viewsets.ModelViewSet):
 
     def list(self, request, **kwargs):
         serializer = ProductSerializer(self.queryset, many=True)
-        return Response(serializer.data)
+        return Response(serializer.data, status=status.HTTP_200_OK)
 
     def retrieve(self, request, pk=None, **kwargs):
         product = get_object_or_404(self.queryset, pk=pk)
         serializer = ProductSerializer(product)
-        return Response(serializer.data)
+        if serializer.is_valid():
+            return Response(serializer.data, status=status.HTTP_200_OK)
+        return Response(status=status.HTTP_400_BAD_REQUEST)
 
     @action(detail=False, methods=['GET'])
     def get_by_code(self, request):
         if request.query_params.get('id') is not None:
             code = request.query_params.get('id')
             serializer = ProductSerializer(get_object_or_404(self.queryset, code=code))
-            return Response(serializer.data)
+            if serializer.is_valid():
+                return Response(serializer.data, status=status.HTTP_200_OK)
+            return Response(status=status.HTTP_400_BAD_REQUEST)
         return Response(status.HTTP_404_NOT_FOUND)
 
     @action(detail=False, methods=['GET'])
@@ -82,7 +86,9 @@ class ProductViewSet(viewsets.ModelViewSet):
 
             queryset = self.queryset.filter(product_type__in=product_type)
             serializer = ProductSerializer(queryset, many=True)
-            return Response(serializer.data)
+            if serializer.is_valid():
+                return Response(serializer.data, status=status.HTTP_200_OK)
+            return Response(status=status.HTTP_400_BAD_REQUEST)
         return Response(status.HTTP_404_NOT_FOUND)
 
     @action(detail=False, methods=['GET'])
@@ -93,7 +99,9 @@ class ProductViewSet(viewsets.ModelViewSet):
 
             queryset = self.queryset.filter(product_type__in=product_type)
             serializer = ProductSerializer(queryset, many=True)
-            return Response(serializer.data)
+            if serializer.is_valid():
+                return Response(serializer.data, status=status.HTTP_200_OK)
+            return Response(status=status.HTTP_400_BAD_REQUEST)
         return Response(status.HTTP_404_NOT_FOUND)
 
     def get_permissions(self):
@@ -110,7 +118,9 @@ class ProductViewSet(viewsets.ModelViewSet):
             product_type = request.query_params.get('id')
             queryset = self.queryset.filter(product_type=product_type)
             serializer = ProductSerializer(queryset, many=True)
-            return Response(serializer.data)
+            if serializer.is_valid():
+                return Response(serializer.data, status=status.HTTP_200_OK)
+            return Response(status=status.HTTP_400_BAD_REQUEST)
         return Response(status.HTTP_404_NOT_FOUND)
 
 

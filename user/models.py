@@ -1,11 +1,7 @@
 from django.contrib.auth.base_user import AbstractBaseUser
 from django.contrib.auth.models import AbstractUser
 from django.db import models
-from django.db.models.signals import post_save
-from django.dispatch import receiver
 from rest_framework.authtoken.models import Token
-
-from BTSApp.settings import AUTH_USER_MODEL
 
 
 class LocationModel(models.Model):
@@ -48,14 +44,4 @@ class CustomUserModel(AbstractUser):
     def __str__(self):
         return f'{self.first_name} {self.last_name} - {self.username}'
 
-    def save(self, *args, **kwargs):
-        self.username = str(self.username)
-        super(CustomUserModel, self).save(*args, **kwargs)
 
-
-@receiver(post_save, sender=AUTH_USER_MODEL)
-def create_auth_token(sender, instance=None, created=False, **kwargs):
-    for user in CustomUserModel.objects.all():
-        Token.objects.get_or_create(user=user)
-    if created:
-        Token.objects.create(user=instance)
