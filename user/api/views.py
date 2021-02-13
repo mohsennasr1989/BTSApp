@@ -1,5 +1,6 @@
-from django.contrib.auth import authenticate, login, logout
+from django.contrib.auth import authenticate, login, logout, get_user
 from django.contrib.auth.decorators import login_required
+from django.http import QueryDict
 from django.shortcuts import get_object_or_404
 from django.views.decorators.csrf import csrf_exempt
 from rest_framework import status
@@ -182,11 +183,13 @@ class CustomUserViewSet(ViewSet):
         is_modified = False
         for user in CustomUserModel.objects.all():
             if user.login_token == "":
-                token = Token.objects.get(user=user.pk)
+                try:
+                    token = Token.objects.get(user=user.id)
+                except Exception as e:
+                    token = Token(user=user)
                 user.login_token = token.key
                 user.save()
                 is_modified = True
-
         if is_modified:
             users = CustomUserModel.objects.all()
             serializer = CustomUserSerializer(users, many=True)
@@ -216,21 +219,27 @@ class CustomUserViewSet(ViewSet):
     @action(detail=False, methods=['GET', 'POST'])
     @permission_classes((IsAuthenticated,))
     def logout(self, request):
-        token = None
-        try:
-            if request.method == 'POST':
-                token = request.POST['token']
-            elif request.method == 'GET':
-                token = request.GET['token']
-        except Exception as e:
-            request.session.flush()
-            return Response({'status': "Logout failed.", 'error': str(e)},
-                            status=status.HTTP_400_BAD_REQUEST)
-        serializer = CustomUserSerializer(get_object_or_404(self.queryset, login_token=token))
-        if serializer is not None:
-            logout(request)
-        else:
-            return Response({'status': "Invalid user."},
-                            status=status.HTTP_401_UNAUTHORIZED)
+        logout(request=request)
         return Response({'status': "Logout success."},
                         status=status.HTTP_200_OK)
+
+    @csrf_exempt
+    @action(detail=False, methods=['GET', 'POST'])
+    @permission_classes((IsAuthenticated,))
+    def reset_token(self, request):
+        user = get_user(request)
+        if user is not None:
+            try:
+                token = Token.objects.get(user=user)
+                token.delete()
+            except Exception as e:
+                token = None
+            token = Token.objects.create(user=user)
+            user.login_token = token.key
+            user.save()
+            serializer = CustomUserSerializer(user)
+            return Response(serializer.data,
+                            status=status.HTTP_201_CREATED)
+        else:
+            return Response({'status': "Invalid username or password."},
+                            status=status.HTTP_401_UNAUTHORIZED)
