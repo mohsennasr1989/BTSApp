@@ -1,6 +1,5 @@
 from django.contrib.auth import authenticate, login, logout, get_user
 from django.contrib.auth.decorators import login_required
-from django.http import QueryDict
 from django.shortcuts import get_object_or_404
 from django.views.decorators.csrf import csrf_exempt
 from rest_framework import status
@@ -8,7 +7,6 @@ from rest_framework.decorators import action, permission_classes
 from rest_framework.permissions import AllowAny, IsAuthenticated, IsAdminUser
 from rest_framework.response import Response
 from rest_framework.viewsets import ViewSet
-
 from .serializers import CustomUserSerializer, TokenSerializer
 from ..models import CustomUserModel, UserActivityModel, LocationModel
 from rest_framework.authtoken.models import Token
@@ -96,25 +94,30 @@ class CustomUserViewSet(ViewSet):
             serializer = CustomUserSerializer(data).validate(data)
             request.session['signup_data'] = serializer
 
-            user = CustomUserModel(first_name=data['first_name'],
-                                   last_name=data['last_name'],
-                                   username=data['mobile'],
-                                   password=data['password'],
-                                   location=data['location'],
-                                   activity=data['activity'],
-                                   address=data['address'],
-                                   phone=data['phone'])
+            user = CustomUserModel(
+                first_name=serializer['first_name'],
+                last_name=serializer['last_name'],
+                username=serializer['username'],
+                password=serializer['password'],
+                address=serializer['address'],
+                phone=serializer['phone'],
+                location=LocationModel.objects.get(pk=serializer['location']),
+                activity=UserActivityModel.objects.get(pk=serializer['activity']),
+                rule=serializer['rule'],
+                login_token=serializer['login_token'],
+                firebase_token=serializer['firebase_token']
+            )
             user.set_password(data['password'])
             user.save()
-            user.login_token = Token.objects.get_or_create(user=user)
+            token = Token.objects.get_or_create(user=user)
+            user.login_token = token.key
             user.save()
-
+            return Response(data=CustomUserSerializer(user).data,
+                            status=status.HTTP_200_OK)
         except Exception as e:
             request.session.flush()
             return Response({'status': "Sign up failed.", 'error': str(e)},
                             status=status.HTTP_400_BAD_REQUEST)
-        return Response({'status': "Signup Success"},
-                        status=status.HTTP_200_OK)
 
     @csrf_exempt
     @action(detail=False, methods=['GET', 'POST'])
