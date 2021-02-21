@@ -24,7 +24,7 @@ from translate.api import views as translate_view
 from user.api import views as user_view
 from rest_framework.authtoken import views as token_views
 
-router = routers.SimpleRouter()
+router = routers.DefaultRouter(trailing_slash=False)
 router.register('product-category', product_view.ProductCategoryViewSet, basename='product-category')
 router.register('product-subcategory', product_view.ProductSubcategoryViewSet, basename='product-subcategory')
 router.register('product-type', product_view.ProductTypeViewSet, basename='product-type')
